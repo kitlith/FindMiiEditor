@@ -13,16 +13,16 @@ struct Level {
     map: u32,
     zoom_out_max: f32,
     zoom_in_max: f32,
-    unk7: u32,
+    unk7: f32,
     horiz_dist: f32,
     vert_dist: f32,
-    unk10: u32,
+    unk10: f32,
     head_size: f32,
-    unk12: u32, // padding?
-    unk13: u32,
-    unk14: u32,
-    unk15: u32,
-    unk16: u32
+    unk12: f32,
+    unk13: f32,
+    unk14: f32,
+    unk15: f32,
+    unk16: f32
 }
 
 impl Level {
@@ -34,16 +34,16 @@ impl Level {
             map: BigEndian::read_u32(&input[12..]),
             zoom_out_max: BigEndian::read_f32(&input[16..]),
             zoom_in_max: BigEndian::read_f32(&input[20..]),
-            unk7: BigEndian::read_u32(&input[24..]),
+            unk7: BigEndian::read_f32(&input[24..]),
             horiz_dist: BigEndian::read_f32(&input[28..]),
             vert_dist: BigEndian::read_f32(&input[32..]),
-            unk10: BigEndian::read_u32(&input[36..]),
+            unk10: BigEndian::read_f32(&input[36..]),
             head_size: BigEndian::read_f32(&input[40..]),
-            unk12: BigEndian::read_u32(&input[44..]),
-            unk13: BigEndian::read_u32(&input[48..]),
-            unk14: BigEndian::read_u32(&input[52..]),
-            unk15: BigEndian::read_u32(&input[56..]),
-            unk16: BigEndian::read_u32(&input[60..]),
+            unk12: BigEndian::read_f32(&input[44..]),
+            unk13: BigEndian::read_f32(&input[48..]),
+            unk14: BigEndian::read_f32(&input[52..]),
+            unk15: BigEndian::read_f32(&input[56..]),
+            unk16: BigEndian::read_f32(&input[60..]),
         }
     }
 
@@ -54,16 +54,16 @@ impl Level {
         BigEndian::write_u32(&mut output[12..], self.map);
         BigEndian::write_f32(&mut output[16..], self.zoom_out_max);
         BigEndian::write_f32(&mut output[20..], self.zoom_in_max);
-        BigEndian::write_u32(&mut output[24..], self.unk7);
+        BigEndian::write_f32(&mut output[24..], self.unk7);
         BigEndian::write_f32(&mut output[28..], self.horiz_dist);
         BigEndian::write_f32(&mut output[32..], self.vert_dist);
-        BigEndian::write_u32(&mut output[36..], self.unk10);
+        BigEndian::write_f32(&mut output[36..], self.unk10);
         BigEndian::write_f32(&mut output[40..], self.head_size);
-        BigEndian::write_u32(&mut output[44..], self.unk12);
-        BigEndian::write_u32(&mut output[48..], self.unk13);
-        BigEndian::write_u32(&mut output[52..], self.unk14);
-        BigEndian::write_u32(&mut output[56..], self.unk15);
-        BigEndian::write_u32(&mut output[60..], self.unk16);
+        BigEndian::write_f32(&mut output[44..], self.unk12);
+        BigEndian::write_f32(&mut output[48..], self.unk13);
+        BigEndian::write_f32(&mut output[52..], self.unk14);
+        BigEndian::write_f32(&mut output[56..], self.unk15);
+        BigEndian::write_f32(&mut output[60..], self.unk16);
     }
 }
 
