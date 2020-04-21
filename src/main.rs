@@ -120,7 +120,7 @@ fn main() {
             for (idx, level) in levels.iter().enumerate() {
                 match level.level_type {
                     6 if !favorite_pending => favorite_pending = true,
-                    6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after anohter 'pick your favorite'. Game will crash.", idx),
+                    6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after another 'pick your favorite'. Game will crash.", idx),
                     7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite'. Game will crash.", idx),
                     7 if favorite_pending => favorite_pending = false,
                     9  | 10 | 11 if level.behavior != 1 && level.behavior != 4 =>
