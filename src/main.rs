@@ -123,7 +123,10 @@ fn main() {
                     6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after anohter 'pick your favorite'. Game will crash.", idx),
                     7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite'. Game will crash.", idx),
                     7 if favorite_pending => favorite_pending = false,
-                    17 | 18 | 19 if level.behavior != 0 => println!("Warning: level index {} has an objective that requires behavior 0 to function properly.", idx),
+                    9  | 10 | 11 if level.behavior != 1 && level.behavior != 4 =>
+                        println!("Warning: level index {} has an objective that requires behavior 1 or 4 to function properly, but is set to {}", idx, level.behavior),
+                    17 | 18 | 19 if level.behavior != 0 =>
+                        println!("Warning: level index {} has an objective that requires behavior 0 to function properly, but is set to {}", idx, level.behavior),
                     _ => {}
                 }
 
@@ -204,10 +207,10 @@ fn main() {
                 };
 
                 level.num_miis = rng.sample(Uniform::new_inclusive(4, max_miis));
-                level.behavior = if level.level_type >= 17 && level.level_type <= 19 {
-                    0
-                } else {
-                    rng.sample(Uniform::new_inclusive(0, 6))
+                level.behavior = match level.level_type {
+                    9  | 10 | 11 => if rng.gen_ratio(1, 2) { 1 } else { 4 }
+                    17 | 18 | 19 => 0,
+                    _ => rng.sample(Uniform::new_inclusive(0, 6)),
                 };
 
                 level.map = rng.sample(Uniform::new_inclusive(0, 4));
