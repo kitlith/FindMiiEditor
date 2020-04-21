@@ -116,6 +116,18 @@ fn main() {
             let mut input_file = File::open(&input).unwrap();
             let levels: Vec<Level> = serde_json::from_reader(input_file).unwrap();
 
+            let mut favorite_pending = false;
+            for (idx, level) in levels.iter().enumerate() {
+                match (level.level_type, favorite_pending) {
+                    (6, false) => favorite_pending = true,
+                    (6, true) => println!("Warning: level index {} is of type 'pick your favorite' after anohter 'pick your favorite'. Game will crash.", idx),
+                    (7, false) => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite'. Game will crash.", idx),
+                    (7, true) => favorite_pending = false,
+                    (_, true) if idx == levels.len() - 1 => println!("Warning: there is no matching 'find your favorite' level to a 'pick your favorite' level, and we've reached the end of the file. Game will crash."),
+                    _ => {}
+                }
+            }
+
             let output = output.unwrap_or_else(|| input.with_extension("bin"));
             let mut output = File::create(output).unwrap();
 
@@ -148,9 +160,18 @@ fn main() {
                 level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
                 level.behavior = rng.sample(Uniform::new_inclusive(1, 6));
 
-                level.level_type = if (i == last_idx) && favorite_pending {
-                    favorite_pending = false;
-                    7
+                level.level_type = if (i == last_idx) {
+                    if favorite_pending {
+                        favorite_pending = false;
+                        7
+                    } else {
+                        // avoid generating 6 or 7
+                        let mut level_type = rng.sample(Uniform::new_inclusive(1, 19));
+                        if level_type > 5 {
+                            level_type += 2;
+                        }
+                        level_type
+                    }
                 } else {
                     let level_type = rng.sample(Uniform::new_inclusive(1, 21));
                     if level_type == 6 || level_type == 7 {
