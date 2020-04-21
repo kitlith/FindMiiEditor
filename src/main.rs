@@ -158,7 +158,7 @@ fn main() {
             let last_idx = levels.len() - 1;
             for (i, mut level) in levels.iter_mut().enumerate() {
                 level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
-                level.behavior = rng.sample(Uniform::new_inclusive(1, 6));
+                level.behavior = rng.sample(Uniform::new_inclusive(0, 6));
 
                 level.level_type = if (i == last_idx) {
                     if favorite_pending {
