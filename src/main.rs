@@ -126,6 +126,15 @@ fn main() {
                     17 | 18 | 19 if level.behavior != 0 => println!("Warning: level index {} has an objective that requires behavior 0 to function properly.", idx),
                     _ => {}
                 }
+
+                let max_miis = match level.map {
+                    4 => 40,
+                    _ => 90
+                };
+
+                if level.max_miis > max_miis {
+                    println!("Warning: level index {} has more than the maximum of {} miis.", idx, max_miis);
+                }
             }
 
             if favorite_pending {
@@ -189,7 +198,12 @@ fn main() {
                     }
                 };
 
-                level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
+                let max_miis = match level.map {
+                    4 => 40,
+                    _ => 90
+                };
+
+                level.num_miis = rng.sample(Uniform::new_inclusive(4, max_miis));
                 level.behavior = if level.level_type >= 17 && level.level_type <= 19 {
                     0
                 } else {
