@@ -4,6 +4,9 @@ use std::path::PathBuf;
 use std::io::{Read, Write};
 use byteorder::{BigEndian, ByteOrder};
 use structopt::StructOpt;
+use rand::prelude::*;
+use rand::distributions::uniform::Uniform;
+use rand::SeedableRng;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 struct Level {
@@ -16,7 +19,7 @@ struct Level {
     unk7: f32,
     horiz_dist: f32,
     vert_dist: f32,
-    unk10: f32,
+    darkness: f32,
     head_size: f32,
     unk12: f32,
     unk13: f32,
@@ -37,7 +40,7 @@ impl Level {
             unk7: BigEndian::read_f32(&input[24..]),
             horiz_dist: BigEndian::read_f32(&input[28..]),
             vert_dist: BigEndian::read_f32(&input[32..]),
-            unk10: BigEndian::read_f32(&input[36..]),
+            darkness: BigEndian::read_f32(&input[36..]),
             head_size: BigEndian::read_f32(&input[40..]),
             unk12: BigEndian::read_f32(&input[44..]),
             unk13: BigEndian::read_f32(&input[48..]),
@@ -57,13 +60,30 @@ impl Level {
         BigEndian::write_f32(&mut output[24..], self.unk7);
         BigEndian::write_f32(&mut output[28..], self.horiz_dist);
         BigEndian::write_f32(&mut output[32..], self.vert_dist);
-        BigEndian::write_f32(&mut output[36..], self.unk10);
+        BigEndian::write_f32(&mut output[36..], self.darkness);
         BigEndian::write_f32(&mut output[40..], self.head_size);
         BigEndian::write_f32(&mut output[44..], self.unk12);
         BigEndian::write_f32(&mut output[48..], self.unk13);
         BigEndian::write_f32(&mut output[52..], self.unk14);
         BigEndian::write_f32(&mut output[56..], self.unk15);
         BigEndian::write_f32(&mut output[60..], self.unk16);
+    }
+
+    fn from_file(mut input: File) -> Vec<Level> {
+        let mut levels: Vec<Level> = Vec::new();
+        let mut lvl_bytes = [0u8;64];
+        while input.read_exact(&mut lvl_bytes).is_ok() {
+            levels.push(Level::from_bytes(&lvl_bytes));
+        }
+        levels
+    }
+
+    fn to_file(mut output: File, levels: Vec<Level>) {
+        let mut lvl_bytes = [0u8;64];
+        for level in levels {
+            level.to_bytes(&mut lvl_bytes);
+            output.write_all(&lvl_bytes);
+        }
     }
 }
 
@@ -78,6 +98,13 @@ enum Args {
         compact: bool,
         input: PathBuf,
         output: Option<PathBuf>
+    },
+    Randomize {
+        input: PathBuf,
+        output: PathBuf,
+        #[structopt(long, short)]
+        seed: Option<u64>
+        // TODO: let the parameters be tweaked
     }
 }
 
@@ -92,28 +119,46 @@ fn main() {
             let output = output.unwrap_or_else(|| input.with_extension("bin"));
             let mut output = File::create(output).unwrap();
 
-            let mut lvl_bytes = [0u8;64];
-            for level in levels {
-                level.to_bytes(&mut lvl_bytes);
-                output.write_all(&lvl_bytes);
-            }
+            Level::to_file(output, levels);
         },
         Args::Disassemble {compact, input, output} => {
-            let mut input_file = File::open(&input).unwrap();
-
-            let mut lvl_bytes = [0u8;64];
-            let mut levels: Vec<Level> = Vec::new();
-            while input_file.read_exact(&mut lvl_bytes).is_ok() {
-                levels.push(Level::from_bytes(&lvl_bytes));
-            }
+            let levels = Level::from_file(File::open(&input).unwrap());
 
             let output = output.unwrap_or_else(|| input.with_extension("json"));
             let output = File::create(output).unwrap();
             if compact {
                 serde_json::to_writer(output, &levels).unwrap();
+                //println!("{}", toml::to_string(&levels).unwrap());
             } else {
                 serde_json::to_writer_pretty(output, &levels).unwrap();
+                //println!("{}", toml::to_string_pretty(&levels).unwrap());
             }
+        },
+        Args::Randomize {input, output, seed} => {
+            let mut levels = Level::from_file(File::open(&input).unwrap());
+
+            let seed = seed.unwrap_or_else(|| random());
+            println!("Using seed: {}", seed);
+            let mut rng = SmallRng::seed_from_u64(seed);
+
+            for mut level in &mut levels {
+                level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
+                level.behavior = rng.sample(Uniform::new_inclusive(1, 6));
+                level.level_type = rng.sample(Uniform::new_inclusive(1, 21));
+                level.map = rng.sample(Uniform::new_inclusive(0, 4));
+                level.zoom_out_max = rng.sample(Uniform::new_inclusive(-406.0, -135.0));
+                level.zoom_in_max = rng.sample(Uniform::new_inclusive(-135.0, -22.0));
+
+                level.darkness = if rng.gen_ratio(1, 2) {
+                    0.0 // 50% chance for no darkness
+                } else {
+                    rng.sample(Uniform::new_inclusive(38.0, 90.0))
+                };
+                level.head_size = rng.sample(Uniform::new_inclusive(1.35, 3.5));
+            }
+
+            let output = File::create(output).unwrap();
+            Level::to_file(output, levels);
         }
     }
 
