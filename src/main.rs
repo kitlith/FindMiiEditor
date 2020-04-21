@@ -120,13 +120,13 @@ fn main() {
             for (idx, level) in levels.iter().enumerate() {
                 match level.level_type {
                     6 if !favorite_pending => favorite_pending = true,
-                    6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after another 'pick your favorite'. Game will crash.", idx),
-                    7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite'. Game will crash.", idx),
+                    6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after another 'pick your favorite' level. Game will crash.", idx),
+                    7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite' level. Game will crash.", idx),
                     7 if favorite_pending => favorite_pending = false,
                     9  | 10 | 11 if level.behavior != 1 && level.behavior != 4 =>
-                        println!("Warning: level index {} has an objective that requires behavior 1 or 4 to function properly, but is set to {}", idx, level.behavior),
+                        println!("Warning: level index {} has an objective that requires mii behaviors 1 or 4 to function properly, but is set to {}", idx, level.behavior),
                     17 | 18 | 19 if level.behavior != 0 =>
-                        println!("Warning: level index {} has an objective that requires behavior 0 to function properly, but is set to {}", idx, level.behavior),
+                        println!("Warning: level index {} has an objective that requires mii behavior 0 to function properly, but is set to {}", idx, level.behavior),
                     _ => {}
                 }
 
@@ -136,7 +136,7 @@ fn main() {
                 };
 
                 if level.num_miis > max_miis {
-                    println!("Warning: level index {} has more than the maximum of {} miis.", idx, max_miis);
+                    println!("Warning: level index {} has more than the maximum of {} miis for this level type.", idx, max_miis);
                 }
             }
 
