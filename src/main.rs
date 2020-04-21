@@ -132,7 +132,7 @@ fn main() {
 
                 let max_miis = match level.map {
                     4 => 40,
-                    _ => 90
+                    _ => 99
                 };
 
                 if level.num_miis > max_miis {
