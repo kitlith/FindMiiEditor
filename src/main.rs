@@ -132,7 +132,7 @@ fn main() {
                     _ => 90
                 };
 
-                if level.max_miis > max_miis {
+                if level.num_miis > max_miis {
                     println!("Warning: level index {} has more than the maximum of {} miis.", idx, max_miis);
                 }
             }
