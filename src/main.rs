@@ -82,7 +82,7 @@ impl Level {
         let mut lvl_bytes = [0u8;64];
         for level in levels {
             level.to_bytes(&mut lvl_bytes);
-            output.write_all(&lvl_bytes);
+            output.write_all(&lvl_bytes).unwrap();
         }
     }
 }
@@ -141,10 +141,32 @@ fn main() {
             println!("Using seed: {}", seed);
             let mut rng = SmallRng::seed_from_u64(seed);
 
-            for mut level in &mut levels {
+            let mut favorite_pending = false;
+
+            let last_idx = levels.len() - 1;
+            for (i, mut level) in levels.iter_mut().enumerate() {
                 level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
                 level.behavior = rng.sample(Uniform::new_inclusive(1, 6));
-                level.level_type = rng.sample(Uniform::new_inclusive(1, 21));
+
+                level.level_type = if (i == last_idx) && favorite_pending {
+                    favorite_pending = false;
+                    7
+                } else {
+                    let level_type = rng.sample(Uniform::new_inclusive(1, 21));
+                    if level_type == 6 || level_type == 7 {
+                        // special handling for levels dealing with favorites:
+                        if favorite_pending {
+                            favorite_pending = false;
+                            7
+                        } else {
+                            favorite_pending = true;
+                            6
+                        }
+                    } else {
+                        level_type
+                    }
+                };
+
                 level.map = rng.sample(Uniform::new_inclusive(0, 4));
                 level.zoom_out_max = rng.sample(Uniform::new_inclusive(-406.0, -135.0));
                 level.zoom_in_max = rng.sample(Uniform::new_inclusive(-135.0, -22.0));
