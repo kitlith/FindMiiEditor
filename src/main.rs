@@ -118,14 +118,18 @@ fn main() {
 
             let mut favorite_pending = false;
             for (idx, level) in levels.iter().enumerate() {
-                match (level.level_type, favorite_pending) {
-                    (6, false) => favorite_pending = true,
-                    (6, true) => println!("Warning: level index {} is of type 'pick your favorite' after anohter 'pick your favorite'. Game will crash.", idx),
-                    (7, false) => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite'. Game will crash.", idx),
-                    (7, true) => favorite_pending = false,
-                    (_, true) if idx == levels.len() - 1 => println!("Warning: there is no matching 'find your favorite' level to a 'pick your favorite' level, and we've reached the end of the file. Game will crash."),
+                match level.level_type {
+                    6 if !favorite_pending => favorite_pending = true,
+                    6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after anohter 'pick your favorite'. Game will crash.", idx),
+                    7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite'. Game will crash.", idx),
+                    7 if favorite_pending => favorite_pending = false,
+                    17 | 18 | 19 if level.behavior != 0 => println!("Warning: level index {} has an objective that requires behavior 0 to function properly.", idx),
                     _ => {}
                 }
+            }
+
+            if favorite_pending {
+                println!("Warning: there is no matching 'find your favorite' level to a 'pick your favorite' level, and we've reached the end of the file. Game will crash.");
             }
 
             let output = output.unwrap_or_else(|| input.with_extension("bin"));
@@ -157,9 +161,6 @@ fn main() {
 
             let last_idx = levels.len() - 1;
             for (i, mut level) in levels.iter_mut().enumerate() {
-                level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
-                level.behavior = rng.sample(Uniform::new_inclusive(0, 6));
-
                 level.level_type = if (i == last_idx) {
                     if favorite_pending {
                         favorite_pending = false;
@@ -186,6 +187,13 @@ fn main() {
                     } else {
                         level_type
                     }
+                };
+
+                level.num_miis = rng.sample(Uniform::new_inclusive(4, 90));
+                level.behavior = if level.level_type >= 17 && level.level_type <= 19 {
+                    0
+                } else {
+                    rng.sample(Uniform::new_inclusive(0, 6))
                 };
 
                 level.map = rng.sample(Uniform::new_inclusive(0, 4));
