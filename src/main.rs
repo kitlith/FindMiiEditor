@@ -124,7 +124,7 @@ fn main() {
                     7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite' level. Game will crash.", idx),
                     7 if favorite_pending => favorite_pending = false,
                     9  | 10 | 11 if level.behavior != 1 && level.behavior != 4 =>
-                        println!("Warning: level index {} has an objective that requires mii behaviors 1 or 4 to function properly, but is set to {}", idx, level.behavior),
+                        println!("Warning: level index {} has an objective that requires mii behaviors 1 or 3 to function properly, but is set to {}", idx, level.behavior),
                     17 | 18 | 19 if level.behavior != 0 =>
                         println!("Warning: level index {} has an objective that requires mii behavior 0 to function properly, but is set to {}", idx, level.behavior),
                     _ => {}
@@ -205,25 +205,110 @@ fn main() {
                     4 => 40,
                     _ => 90
                 };
-
+				
+// This is where the magic happens!
+                
                 level.num_miis = rng.sample(Uniform::new_inclusive(4, max_miis));
+				
+				level.unk12 = 0.0;
+				level.unk13 = 0.0;
+				level.unk14 = 0.0;
+				level.unk15 = 0.0;
+				level.unk16 = 0.0;
                 level.behavior = match level.level_type {
-                    9  | 10 | 11 => if rng.gen_ratio(1, 2) { 1 } else { 4 }
-                    17 | 18 | 19 => 0,
+                    9  | 10 | 5 | 11 | 20 => if rng.gen_ratio(1, 2) { 1 } else { 3 } //Find The Odd Mii(s) out
+                    17 | 18 | 19 => 0, // Find The Insomniac 
+					14 | 15 | 16 => 0, // Find The Sleepyhead
+					12 | 13 => if rng.gen_ratio(1, 2) { 4 } else { 2 }
                     _ => rng.sample(Uniform::new_inclusive(0, 6)),
                 };
 
+
                 level.map = rng.sample(Uniform::new_inclusive(0, 4));
+				if level.map == 4 {
+				level.behavior = rng.sample(Uniform::new_inclusive(0, 1));
+}
+	
+                 if level.map == 1 {
+                 level.behavior = match level.map {
+	             1 => if rng.gen_ratio(1, 4) { 0 } else if rng.gen_ratio(1, 2) { 1 } else { 4 }
+				 4 => if rng.gen_ratio(1, 2) { 0 } else { 1 } //Elevator Behavior Softlock Fix
+				 3 => if rng.gen_ratio(1, 2) { 0 } else { 1 } //Tennis Stands Behavior Softlock Fix
+	             _ => rng.sample(Uniform::new_inclusive(4, 5)),
+                };
+	}
                 level.zoom_out_max = rng.sample(Uniform::new_inclusive(-406.0, -135.0));
                 level.zoom_in_max = rng.sample(Uniform::new_inclusive(-135.0, -22.0));
 
                 level.darkness = if rng.gen_ratio(1, 2) {
                     0.0 // 50% chance for no darkness
                 } else {
-                    rng.sample(Uniform::new_inclusive(38.0, 90.0))
+                    rng.sample(Uniform::new_inclusive(76.0, 110.0))
                 };
                 level.head_size = rng.sample(Uniform::new_inclusive(1.35, 3.5));
-            }
+				if level.darkness > 1.0
+				{level.unk12 = 3.0;}
+				{level.unk13 = 10.0;}
+				{level.unk14 = 1.0;}
+				{level.unk15 = 0.0;}
+				{level.unk16 = 6.0;}
+				
+				if level.level_type == 12 {
+				level.zoom_out_max = -190.0;
+				level.zoom_in_max = -190.0;
+				
+				}
+				
+				if level.level_type == 13 {
+				level.zoom_out_max = -190.0;
+				level.zoom_in_max = -190.0;
+				
+				}
+				
+				if level.behavior == 2 {
+                level.horiz_dist = -11.2;
+				level.vert_dist = -22.4;
+				level.zoom_out_max = -190.0;
+				level.zoom_in_max = -190.0;
+				
+				}
+				
+					if level.behavior == 4 {
+                level.horiz_dist = -11.2;
+				level.vert_dist = -22.4;
+				level.zoom_out_max = -190.0;
+				level.zoom_in_max = -190.0;
+				
+				}
+					if level.behavior == 6 {
+                level.horiz_dist = -11.2;
+				level.vert_dist = -22.4;
+				level.zoom_out_max = -190.0;
+				level.zoom_in_max = -190.0;
+				}
+				
+				if level.map == 4 {
+				level.zoom_out_max = -150.0;
+				level.zoom_in_max = -150.0;
+				
+				}
+				
+				if level.map == 1 {
+				level.darkness = 0.0; // Darkness doesn't work on Ocean Stages
+				}
+				
+				if level.map == 1 {
+				level.zoom_out_max = -190.0;
+				level.zoom_in_max = -190.0;
+                level.horiz_dist = -11.2;
+				level.vert_dist = -22.4;
+
+				
+				}
+				
+
+				
+ } 
 
             let output = File::create(output).unwrap();
             Level::to_file(output, levels);
