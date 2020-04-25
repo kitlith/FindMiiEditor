@@ -123,8 +123,8 @@ fn main() {
                     6 if favorite_pending => println!("Warning: level index {} is of type 'pick your favorite' after another 'pick your favorite' level. Game will crash.", idx),
                     7 if !favorite_pending => println!("Warning: level index {} is of type 'find your favorite' without a preceeding 'pick your favorite' level. Game will crash.", idx),
                     7 if favorite_pending => favorite_pending = false,
-                    9  | 10 | 11 if level.behavior != 1 && level.behavior != 4 =>
-                        println!("Warning: level index {} has an objective that requires mii behaviors 1 or 4 to function properly, but is set to {}", idx, level.behavior),
+                    9  | 10 | 11 if level.behavior != 1 && level.behavior != 3 =>
+                        println!("Warning: level index {} has an objective that requires mii behaviors 1 or 3 to function properly, but is set to {}", idx, level.behavior),
                     17 | 18 | 19 if level.behavior != 0 =>
                         println!("Warning: level index {} has an objective that requires mii behavior 0 to function properly, but is set to {}", idx, level.behavior),
                     _ => {}
@@ -205,25 +205,287 @@ fn main() {
                     4 => 40,
                     _ => 90
                 };
-
+				
+// This is where the magic happens!
+                
                 level.num_miis = rng.sample(Uniform::new_inclusive(4, max_miis));
+				
+				level.unk12 = 0.0;
+				level.unk13 = 0.0;
+				level.unk14 = 0.0;
+				level.unk15 = 0.0;
+				level.unk16 = 0.0;
                 level.behavior = match level.level_type {
-                    9  | 10 | 11 => if rng.gen_ratio(1, 2) { 1 } else { 4 }
-                    17 | 18 | 19 => 0,
+                    9  | 10 | 5 | 11 | 20 => if rng.gen_ratio(1, 2) { 1 } else { 3 } //Find The Odd Mii(s) out
+                    17 | 18 | 19 => 0, // Find The Insomniac 
+					14 | 15 | 16 => 0, // Find The Sleepyhead
+					12 | 13 => if rng.gen_ratio(1, 2) { 4 } else { 2 }
                     _ => rng.sample(Uniform::new_inclusive(0, 6)),
                 };
 
+
                 level.map = rng.sample(Uniform::new_inclusive(0, 4));
+				if level.map == 4 {
+				level.behavior = rng.sample(Uniform::new_inclusive(0, 1));
+}
+	
+                 if level.map == 1 {
+                 level.behavior = match level.map {
+	             1 => if rng.gen_ratio(1, 4) { 0 } else if rng.gen_ratio(1, 2) { 1 } else { 4 }
+				 4 => if rng.gen_ratio(1, 2) { 0 } else { 1 } //Elevator Behavior Softlock Fix
+				 3 => if rng.gen_ratio(1, 2) { 0 } else { 1 } //Tennis Stands Behavior Softlock Fix
+	             _ => rng.sample(Uniform::new_inclusive(4, 5)),
+                };
+	}
                 level.zoom_out_max = rng.sample(Uniform::new_inclusive(-406.0, -135.0));
                 level.zoom_in_max = rng.sample(Uniform::new_inclusive(-135.0, -22.0));
 
                 level.darkness = if rng.gen_ratio(1, 2) {
                     0.0 // 50% chance for no darkness
                 } else {
-                    rng.sample(Uniform::new_inclusive(38.0, 90.0))
+                    rng.sample(Uniform::new_inclusive(84.0, 110.0))
                 };
                 level.head_size = rng.sample(Uniform::new_inclusive(1.35, 3.5));
-            }
+				if level.darkness > 1.0
+				{level.unk12 = 3.0;}
+				{level.unk13 = 10.0;}
+				{level.unk14 = 1.0;}
+				{level.unk15 = 0.0;}
+				{level.unk16 = 6.0;}
+				
+				if level.map == 3 { 
+				level.zoom_out_max = if rng.gen_ratio(1, 2) { -279.60767 } else { -187.60767 };
+				level.zoom_in_max = -279.60767;
+				}
+				
+				if level.map == 3 { 
+				level.horiz_dist = 4.7;
+				level.vert_dist = 22.4;
+				}
+				
+				if level.map == 4 { 
+				level.unk7 = 35.0;
+				
+				}
+				
+			    if level.map == 2 {
+				level.unk7 = 0.0;
+				
+				
+				}
+				if level.map == 3 {
+				level.unk7 = -60.0;
+				
+				}
+				//Street Mii Bounding Fixes
+			    if level.map == 0 { 
+                 level.zoom_out_max = if rng.gen_ratio(3, 4) { -199.0 } else { -205.0 };
+				 level.zoom_in_max = if rng.gen_ratio(3, 4) { -199.0 } else { -205.0 };
+			     level.horiz_dist = 35.0;
+				  level.vert_dist = 97.0;
+				}
+				//Ocean Mii Bounding Fixes
+			    if level.map == 1 { 
+                 level.zoom_out_max = if rng.gen_ratio(3, 4) { -180.0 } else { -240.0 };
+				 level.zoom_in_max = if rng.gen_ratio(3, 4) { -180.0 } else { -240.0 };
+			     level.horiz_dist = if rng.gen_ratio(3, 4) { 30.0 } else { 40.0 };
+				  level.vert_dist = if rng.gen_ratio(3, 4) { 90.0 } else { 113.0 };
+			
+				}
+				//Better safe than sorry
+				// If you have too many miis on the Escalator the game will crash
+		        if level.map == 4 { // If Escalator Stage
+                level.num_miis = rng.sample(Uniform::new_inclusive( 8, 40)); // Nothing more then 40 miis
+				
+				}
+				if level.level_type == 5 {
+				
+				level.behavior = 1;
+				}
+				
+				if level.level_type == 9 {
+				level.behavior = 1;
+				
+				}
+				
+				if level.level_type == 10 {
+				level.behavior = 1;
+				
+				}
+				
+				if level.level_type == 11 {
+				level.behavior = 1;
+				
+				}
+				
+				if level.level_type == 20 {
+				level.behavior = 1;
+				
+				}
+				
+                 if level.map == 3 && (level.level_type == 17 || level.level_type == 18 || level.level_type == 19) {
+				 level.darkness = 0.0; // Darkness doesn't work on Find The Insomniac Stages on the Tennis Stands
+
+				}
+				
+				 if level.map == 3 && (level.level_type == 12 || level.level_type == 13) { //Fastest Mii Fix on Tennis Stands
+				 level.behavior = 3;
+                 level.level_type == 2;
+
+				}
+				
+				if level.level_type == 14 {
+				level.behavior = if rng.gen_ratio(1, 2) { 1 } else { 0 }
+				
+				}
+								
+				if level.level_type == 15 {
+				level.behavior = if rng.gen_ratio(1, 2) { 1 } else { 0 }
+				
+				}
+								
+				if level.level_type == 16 {
+				level.behavior = if rng.gen_ratio(1, 2) { 1 } else { 0 }
+				
+				}
+				
+
+                 if level.map == 0 && (level.level_type == 14 || level.level_type == 15 || level.level_type == 16) {
+				 level.darkness = 0.0; // Darkness doesn't work on Find the Sleepyhead Stages on the Street
+				 
+				 }
+				 
+				 if level.map == 0 && (level.zoom_out_max > -199.0) {  // Street Non Zoom Fixes
+				  level.zoom_out_max = -222.0;
+				   level.zoom_in_max = -222.0;
+				      level.horiz_dist = 4.5;
+				        level.vert_dist = 35.4;
+				 
+
+
+				}
+				
+				if level.map == 0 && (level.behavior == 2 || level.behavior == 4 || level.behavior == 6 || level.level_type == 14 || level.level_type == 15 || level.level_type == 16) {
+				 level.zoom_out_max = -222.0;
+				 level.zoom_in_max = -222.0;
+				 level.horiz_dist = if rng.gen_ratio(1, 2) { 33.4 } else { 57.0 };
+				  level.vert_dist = 57.4;
+				 
+
+
+				}
+				
+				
+				if level.map == 1 {
+				level.darkness = 0.0; // Darkness doesn't work on Ocean Stages
+
+
+				
+				}
+				
+				
+				 if level.map == 3 && (level.behavior == 3 || level.behavior == 4 || level.behavior == 6) {
+				  level.behavior = 1;
+				
+					
+				 }
+				 
+	              if level.map == 0 && (level.zoom_out_max == -205.0 || level.zoom_in_max == -199.0) {
+				      level.horiz_dist = 22.4;
+				        level.vert_dist = 64.0;
+				 
+				 }
+			
+			        if level.map == 1 && (level.zoom_out_max == -240.0) {
+			        level.zoom_in_max = -180.0;
+				        level.horiz_dist = 15.0;
+				        level.vert_dist = 72.0;
+				 
+				 }
+				 //Find the Sleepyhead Tennis Stands Fix
+				 if level.map == 3 && (level.level_type == 14 || level.level_type == 15 || level.level_type == 16) {
+				 level.level_type = 21;
+			     level.behavior = 1;
+				 
+				 
+				 }
+				 //Fastest Mii Fix Tennis Fix
+				 if level.map == 3 && (level.level_type == 12 || level.level_type == 13) {
+				 	 level.level_type = 21;
+				      level.behavior = 0;
+				 
+				 
+				 
+				 }
+				 //Odd Mii Out Fix Tennis Stands Fix
+				 	if level.map == 3 && (level.level_type == 9 || level.level_type == 10 || level.level_type == 11 || level.level_type == 20) {
+				     level.behavior = 1;
+				 
+				 
+				 }
+				 
+				 if level.map == 2 { 
+				level.darkness = if rng.gen_ratio(1, 3) {
+                    0.0 // 50% chance for no darkness
+                } else {
+                    rng.sample(Uniform::new_inclusive(94.9, 135.0))
+				 
+				 
+				 };
+				 
+				 
+		 }
+		 //Insomniac Fix Tennis Stands
+				 if level.map == 3 && (level.level_type == 17 || level.level_type == 18 || level.level_type == 19) {
+				 level.level_type = 10;
+			     level.behavior = 1;
+				 
+				 
+				 }
+				 //Street Non Zoom Level Fix for Miis
+				 if level.map == 0 && (level.zoom_out_max == -205.0 || level.zoom_in_max == -205.0) {
+				  level.horiz_dist = 4.7;
+				  level.vert_dist = 24.0;
+				 
+				 }
+				 
+				  if level.map == 1 && (level.zoom_out_max == -180.0 || level.zoom_in_max == -180.0) {
+				  level.horiz_dist = 10.2;
+				  level.vert_dist = 17.4;
+				 
+				}
+			
+			 if level.map == 0 && (level.behavior == 5) {
+				  level.behavior = 1;
+				
+				}
+				
+			 if level.map == 0 && (level.zoom_out_max == -199.0 || level.zoom_in_max == -199.0) {
+				  level.horiz_dist = 4.0;
+				  level.vert_dist = 11.0;
+				
+				}
+				
+				 if level.map == 0 && (level.horiz_dist == 10.2 || level.vert_dist == 17.4) {
+				  level.horiz_dist = 22.4;
+				  level.vert_dist = 64.0;
+				  level.zoom_in_max = -205.0;
+				
+				}
+				
+				if level.map == 2 && (level.level_type == 12 || level.level_type == 13) {
+				  level.horiz_dist = 16.3;
+				  level.vert_dist = 12.8;				  
+				}
+				//Darkness Find The Odd Mii Out fix on Space Stages. Which doesnt work for some reason
+				if level.map == 2 && (level.level_type == 9 || level.level_type == 10 || level.level_type == 11) {
+				 level.darkness = 0.0;
+				
+				
+				}
+
+				
+ } 
 
             let output = File::create(output).unwrap();
             Level::to_file(output, levels);
