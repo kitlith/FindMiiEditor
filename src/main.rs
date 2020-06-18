@@ -208,7 +208,7 @@ fn main() {
 				
 // This is where the magic happens!
                 
-                level.num_miis = rng.sample(Uniform::new_inclusive(4, max_miis));
+                level.num_miis = rng.sample(Uniform::new_inclusive(6, max_miis)); //The Minimum is actually 6 because of the "Find 5 look alikes" Objective
 				
 				level.unk12 = 0.0;
 				level.unk13 = 0.0;
@@ -246,12 +246,13 @@ fn main() {
                     rng.sample(Uniform::new_inclusive(84.0, 110.0))
                 };
                 level.head_size = rng.sample(Uniform::new_inclusive(1.35, 3.5));
-				if level.darkness > 1.0
-				{level.unk12 = 3.0;}
-				{level.unk13 = 10.0;}
-				{level.unk14 = 1.0;}
-				{level.unk15 = 0.0;}
-				{level.unk16 = 6.0;}
+        if level.darkness > 1.0 {
+       level.unk12 = 3.0;
+      level.unk13 = 10.0;
+       level.unk14 = 1.0;
+      level.unk15 = 0.0;
+      level.unk16 = 6.0;
+}
 				
 				if level.map == 3 { 
 				level.zoom_out_max = if rng.gen_ratio(1, 2) { -279.60767 } else { -187.60767 };
@@ -390,6 +391,48 @@ fn main() {
 					
 				 }
 				 
+				 if level.map == 2 { // If It's the Space Stage.
+				 level.num_miis = rng.sample(Uniform::new_inclusive( 20, 30)); // More than 30 Miis makes the stage unplayable. Due to the game's settings in this environment, 30 > x > 20 Miis works the best without any camera zoom edits.
+				 level.zoom_out_max = -180.0;
+				 level.zoom_in_max = if rng.gen_ratio(1, 2) { -180.0 } else { -297.4774 };
+				 
+				 
+				 
+				 }
+				 
+				 if level.map == 2 && (level.zoom_out_max == -180.0 || level.zoom_in_max == -180.0) { // space camera randomizer param 1
+				 level.horiz_dist = 29.9;
+				 level.vert_dist = 16.9;
+				 
+				 }
+				 
+				 if level.map == 2 && (level.zoom_out_max == -180.0 || level.zoom_in_max == -297.4774) { // space camera randomizer param 2
+				 level.horiz_dist = 29.9; 
+				 level.vert_dist = 16.9;
+
+				 
+				 }
+				 
+				 if level.map == 2 {
+				level.behavior = if rng.gen_ratio(1, 2) { 5 } else { 1 };
+				 
+				 }
+				 
+				 if level.map == 2 && (level.behavior == 5 || level.zoom_out_max == -180.0 || level.zoom_in_max == -180.0) { // space camera randomizer param 2
+				 level.horiz_dist = 26.9; 
+				 level.vert_dist = 21.9;
+				 
+				 }
+				 
+				 if level.map == 2 && (level.behavior == 1) { // SPACE CAMERA ODD MII OUT PARAM
+				 level.horiz_dist = 26.9; 
+				 level.vert_dist = 21.9;
+				 level.zoom_out_max = -180.0; // You absolutely need this
+				 level.zoom_in_max = -297.4774; // You absolutely need this
+				 
+				 
+				 }
+				 
 	              if level.map == 0 && (level.zoom_out_max == -205.0 || level.zoom_in_max == -199.0) {
 				      level.horiz_dist = 22.4;
 				        level.vert_dist = 64.0;
@@ -425,7 +468,7 @@ fn main() {
 				 }
 				 
 				 if level.map == 2 { 
-				level.darkness = if rng.gen_ratio(1, 3) {
+				level.darkness = if rng.gen_ratio(2, 4) {
                     0.0 // 50% chance for no darkness
                 } else {
                     rng.sample(Uniform::new_inclusive(94.9, 135.0))
@@ -483,8 +526,151 @@ fn main() {
 				
 				
 				}
-
+				//Yet Another Find the Fastest Mii Escalator Fix
+				if level.map == 4 && (level.level_type == 13) {
+				 level.level_type = if rng.gen_ratio(2, 4) { 10 } else { 2 };
+			     level.behavior = 1;
 				
+				}
+				
+				
+		//Yet Another Find the Fastest Mii Escalator Fix For Type 12
+				if level.map == 4 && (level.level_type == 12) {
+				 level.level_type = if rng.gen_ratio(2, 4) { 10 } else { 2 };
+			     level.behavior = 1;
+				 
+				 }
+				 
+				if level.level_type == 17 {
+				
+				level.behavior = 0;
+				}
+				
+				if level.level_type == 18 {
+				level.behavior = 0;
+				
+				}
+				
+				if level.level_type == 19 {
+				level.behavior = 0;
+				
+				}
+				// "Find 3 odd miis out" doesnt work with Darkness on this stage for some reason
+				 if level.map == 0 && (level.level_type == 11 || level.darkness > 0.1) { // Set to greater than 0.1, Just in case
+				   level.level_type = 10;
+				
+				}
+				
+		//Street Mii Bounding Fix for Odd Mii out at
+				 if level.map == 0 && (level.level_type == 9 || level.level_type == 10) {
+				   level.behavior = 1;
+				
+				}
+				
+				//Ocean Behavior Fix for Fastest Mii Levels
+				 if level.map == 1 && (level.level_type == 12 || level.level_type == 13) { 
+				   level.behavior = if rng.gen_ratio(3, 5) { 4 } else { 6 }
+				
+				}
+				
+				if level.map == 0 && (level.zoom_out_max == -222.0 || level.zoom_in_max == -222.0 || level.behavior == 0 || level.behavior == 1 || level.behavior == 3 || level.behavior == 5 ) {
+				  level.horiz_dist = 11.4;
+				  level.vert_dist = 12.9;
+				  
+				}
+				
+				if level.map == 3 && (level.behavior == 5) {
+				level.behavior = 1;
+				level.level_type = 10;
+				}
+
+	          if level.map == 1 && (level.zoom_out_max == -180.0 || level.zoom_out_max == -180.0) {  
+				     level.horiz_dist = 8.2;
+				      level.vert_dist = 12.4;
+				
+				
+				}
+				//Fix for "Find The Insomniac" levels on the Escalator stage. Which don't function. 
+				if level.map == 1 && (level.level_type == 17 || level.level_type == 18 || level.level_type == 19) { 
+			    level.behavior = 1;
+				level.level_type = 21;
+				
+				}
+				//Ocean Mii Behavior 4 Fix
+				if level.map == 1 && (level.zoom_out_max == -240.0 || level.zoom_out_max == -240.0 || level.behavior == 4 || level.behavior == 2 || level.behavior == 6) {
+				level.horiz_dist = 38.2;
+		        level.vert_dist = 26.4;
+				
+				}
+				//Yet another Mii Behavior Type 3 fix for the tennis stands stages
+				if level.map == 3 && (level.behavior == 3) {
+				 level.behavior = 1;
+				 
+				}
+				//Find 3 look alikes doesn't work on Tennis Stands with darkness for some reason
+				if level.map == 3 && (level.level_type == 2 || level.level_type == 3 || level.level_type == 4 || level.darkness > 0.1) { // Set to greater than 0.1, Just in case
+				 level.level_type = 10;
+				 level.behavior = 1;
+				   
+				   
+				   }
+				   if level.map == 1 && (level.zoom_out_max == -240.0 || level.zoom_out_max == -240.0 || level.behavior == 2 || level.behavior == 4 || level.behavior == 6 ) { // Yet Another Ocean Mii Position Fix
+				   level.horiz_dist = 40.6;
+		           level.vert_dist = 60.4;
+				   
+				   
+				   }
+				   if level.map == 3 && (level.zoom_out_max == -279.60767 || level.zoom_out_max == -279.60767) { //Hopefully the last Tennis Mii Pos Fix
+				   level.horiz_dist = 5.4;
+		           level.vert_dist = 8.2;
+				   
+				   }
+				   if level.map == 1 && (level.zoom_out_max == -240.0 || level.zoom_out_max == -240.0 || level.behavior == 0 || level.behavior == 1 || level.behavior == 3) { // Yet Again, Another Ocean Mii Position Fix
+				   level.zoom_out_max = -255.0;
+				    level.zoom_in_max = -255.0;
+				     level.horiz_dist = 6.4;
+		              level.vert_dist = 17.1;
+					  
+				   }
+				   
+				   if level.map == 1 && (level.zoom_out_max == -255.0) {
+				   //You can have up to 99 miis on the ocean stage but I have to add this because Mii Bounding wont work without it (Offscreen Miis Fix)
+				   level.num_miis = rng.sample(Uniform::new_inclusive( 8, 64));
+				   
+				   
+				   }
+				   
+				 if level.map == 4 && (level.level_type == 3 || level.level_type == 4 || level.darkness > 0.1) {//Find 5 Lookalikes darkness fix
+				 level.level_type = 21;
+				 
+				 }
+				 //I really really hope this is the last bounding fix
+				 if level.map == 1 && (level.zoom_out_max == -255.0 || level.zoom_in_max == -255.0 || level.behavior == 2 || level.behavior == 4 || level.behavior == 6) {
+				 level.horiz_dist = 40.6;
+		         level.vert_dist = 60.4;
+				 level.unk7 = 0.0;
+				 
+				 
+				 }
+				 
+				 
+			     if level.map == 1 && (level.zoom_out_max == -255.0 || level.zoom_in_max == -255.0 || level.behavior == 0 || level.behavior == 1 || level.behavior == 3) {
+				 level.horiz_dist = 6.4;
+		         level.vert_dist = 17.1;
+				 level.unk7 = 0.0;
+				 
+				 }
+				 
+				  if level.map == 4 && (level.level_type == 17 || level.level_type == 18 || level.level_type == 18) {
+				   level.behavior = 1;
+				    level.level_type = 2;
+				 
+				 }
+				   
+				   
+				   
+				   
+			
  } 
 
             let output = File::create(output).unwrap();
