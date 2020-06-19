@@ -183,6 +183,53 @@ impl<T> Distribution<T> for Range<T> where T: SampleUniform + PartialOrd + Displ
     }
 }
 
+struct Set<T>(std::collections::BTreeSet<T>);
+
+impl<T> Set<T> where T: Ord + Display + Clone {
+    fn new(elems: &[T]) -> Self {
+        Set(elems.iter().cloned().collect())
+    }
+
+    fn remove(&mut self, elem: &T) -> Result<(), String> {
+        self.0.remove(elem);
+        if self.0.len() == 0 {
+            Err(format!("Removed last element from set: {}", elem))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn subtract(&mut self, elems: &[T]) -> Result<(), String> {
+        for elem in elems {
+            self.remove(elem)?;
+        }
+
+        Ok(())
+    }
+
+    fn intersect(&mut self, elems: &[T]) -> Result<(), String> {
+        self.0 = self.0.intersection(&elems.iter().cloned().collect()).cloned().collect();
+        if self.0.len() == 0 {
+            Err("No items left in set!".to_string())
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl<T> Distribution<T> for Set<T> where T: Ord + Clone {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T {
+        if self.0.len() == 0 {
+            panic!("Attempted to sample an empty set!");
+        }
+
+        let idx = rng.gen_range(0, self.0.len());
+
+        // take the item at the randomly generated index in the BTreeSet
+        self.0.iter().skip(idx).next().unwrap().clone()
+    }
+}
+
 fn main() {
     let args = Args::from_args();
 
