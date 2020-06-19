@@ -5,8 +5,9 @@ use std::io::{Read, Write};
 use byteorder::{BigEndian, ByteOrder};
 use structopt::StructOpt;
 use rand::prelude::*;
-use rand::distributions::uniform::Uniform;
+use rand::distributions::uniform::{Uniform, SampleUniform};
 use rand::SeedableRng;
+use std::fmt::Display;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 struct Level {
@@ -105,6 +106,80 @@ enum Args {
         #[structopt(long, short)]
         seed: Option<u64>
         // TODO: let the parameters be tweaked
+    }
+}
+
+#[derive(Debug)]
+enum Range<T> where T: SampleUniform + PartialOrd + Display + Copy {
+    Exact(T),
+    Constraint { min: T, max: T }, // inclusive for the moment
+}
+
+impl<T> Range<T> where T: SampleUniform + PartialOrd + Display + Copy {
+    fn min(&mut self, new_min: T) -> Result<(), String> {
+        match self {
+            Range::Exact(val) if new_min > *val
+                => Err(format!("No possible value: new minimum value ({}) greater than exact value ({})", new_min, val))?,
+            Range::Exact(_)
+                => {},
+            Range::Constraint { max, .. } if new_min > *max
+                => Err(format!("No possible value: new minimum value ({}) greater than maximum value ({})", new_min, max))?,
+            Range::Constraint { min, .. } if new_min > *min
+                => *min = new_min,
+            Range::Constraint { .. }
+                => {},
+        }
+
+        Ok(())
+    }
+
+    fn max(&mut self, new_max: T) -> Result<(), String> {
+        match self {
+            Range::Exact(val) if new_max < *val
+                => Err(format!("No possible value: new maximum value ({}) smaller than exact value ({})", new_max, val))?,
+            Range::Exact(_)
+                => {},
+            Range::Constraint { min, .. } if new_max < *min
+                => Err(format!("No possible value: new maximum value ({}) smaller than minimum value ({})", new_max, min))?,
+            Range::Constraint { max, .. } if new_max < *max
+                => *max = new_max,
+            Range::Constraint { .. }
+                => {},
+        }
+
+        Ok(())
+    }
+
+    // convienence wrapper around min+max at same time
+    fn constrain(&mut self, new_min: T, new_max: T) -> Result<(), String> {
+        self.min(new_min)?;
+        self.max(new_max)
+    }
+
+    fn value(&mut self, new_value: T) -> Result<(), String> {
+        match self {
+            Range::Exact(val) if *val != new_value
+                => Err(format!("No possible value: constrained to two different exact values. old: {}, new: {}", val, new_value))?,
+            Range::Exact(_)
+                => {},
+            Range::Constraint { min, .. } if new_value < *min
+                => Err(format!("No possible value: new exact value ({}) smaller than minimum value ({})", new_value, min))?,
+            Range::Constraint { max, .. } if new_value > *max
+                => Err(format!("No possible value: new exact value ({}) greater than maximum value ({})", new_value, max))?,
+            Range::Constraint { .. }
+                => *self = Range::Exact(new_value)
+        }
+
+        Ok(())
+    }
+}
+
+impl<T> Distribution<T> for Range<T> where T: SampleUniform + PartialOrd + Display + Copy {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T {
+        match self {
+            Range::Exact(val) => *val,
+            Range::Constraint { min, max } => rng.sample(Uniform::new_inclusive(min, max))
+        }
     }
 }
 
