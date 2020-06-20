@@ -352,7 +352,7 @@ fn main() {
 				
 
                  if level.map == 0 && (level.level_type == 14 || level.level_type == 15 || level.level_type == 16) {
-				 level.darkness = 0.0; // Darkness doesn't work on Find the Sleepyhead Stages on the Street
+				 level.darkness = 0.0; // Darkness doesn't work on Find the Sleepyhead Stages on the Street. Even though its in the original game levels....
 				 
 				 }
 				 
@@ -399,6 +399,57 @@ fn main() {
 				 
 				 
 				 }
+				 
+				 
+				// Unfortunately, I could not come up with a better fix. This is how it has to be until I can figure out the exteremely complicated settings for Cameras and Mii Placement this stage uses
+				  if level.map == 2 && (level.behavior == 5) {
+				  level.num_miis = rng.sample(Uniform::new_inclusive( 8, 12));
+				  level.zoom_out_max = -222.0;
+				   level.zoom_in_max = -222.0;
+				   level.horiz_dist = if rng.gen_ratio(70, 100) { 30.0 } else { 35.0 };
+				   level.vert_dist = 21.0;
+				   
+				   }
+				   // Yet..... another.... find the sleepyhead fix for the escalator stage.
+				   if level.map == 4 && (level.level_type == 14 || level.level_type == 15 || level.level_type == 16) {
+				   level.level_type = rng.sample(Uniform::new_inclusive( 1, 5));
+				  
+				  
+				  }
+				  
+				  if level.map == 2 && (level.behavior == 0 || level.behavior == 1) {
+				  level.zoom_out_max = -180.0;
+				   level.zoom_in_max = -297.4774;
+				   level.horiz_dist = 26.9;
+				   level.vert_dist = 21.9;
+				   level.num_miis = rng.sample(Uniform::new_inclusive( 8, 10));
+				   
+				   
+				   }
+				   
+				   if level.map == 2 && (level.level_type == 9 || level.level_type == 10 || level.level_type == 10) { //S I G H. Yet another level fix for the space stage.
+				 level.behavior = 1;
+				   
+				   }
+				   
+				   //Ocean Fix for Fixated Screen with "Find The Fastest Mii"
+				   if level.map == 1 && (level.behavior == 6) { 
+				   level.behavior = 4; //YET... .ABOTHER.... BOUNDING.... FIX... THAT... I... MIGHT... HAVE... ALREADY... MADE... BEFORE.. BUT... STILL.. DIDNT... WORK...
+				  
+				  
+				  }
+				  // I don't think that the escalator stages even have a "Find The Odd Mii Out" Objective in the original game.
+				  if level.map == 4 && (level.level_type == 9 || level.level_type == 10 || level.level_type == 11) {
+				  level.level_type = if rng.gen_ratio(2, 4) { 3 } else if rng.gen_ratio(2, 4) { 9 } else { 21 }
+				  
+				  
+				  }
+				  
+				  if level.map == 2 && (level.level_type == 12 || level.level_type == 13) { // YET ANOTHER FIX FOR THIS LEVEL TYPE
+				  level.level_type = 1;
+				  
+				  
+				  }
 				 
 				 if level.map == 2 && (level.zoom_out_max == -180.0 || level.zoom_in_max == -180.0) { // space camera randomizer param 1
 				 level.horiz_dist = 29.9;
@@ -452,7 +503,7 @@ fn main() {
 				 
 				 
 				 }
-				 //Fastest Mii Fix Tennis Fix
+				 //Fastest Mii Tennis Stands
 				 if level.map == 3 && (level.level_type == 12 || level.level_type == 13) {
 				 	 level.level_type = 21;
 				      level.behavior = 0;
@@ -608,7 +659,7 @@ fn main() {
 				 
 				}
 				//Find 3 look alikes doesn't work on Tennis Stands with darkness for some reason
-				if level.map == 3 && (level.level_type == 2 || level.level_type == 3 || level.level_type == 4 || level.darkness > 0.1) { // Set to greater than 0.1, Just in case
+				if level.map == 3 && (level.level_type == 2 || level.level_type == 4 || level.darkness > 0.1) { // Set to greater than 0.1, Just in case
 				 level.level_type = 10;
 				 level.behavior = 1;
 				   
@@ -618,6 +669,13 @@ fn main() {
 				   level.horiz_dist = 40.6;
 		           level.vert_dist = 60.4;
 				   
+				   }
+				   
+				   //Find 3 - 5 look alikes doesn't work on Street Stagess with darkness for some reason
+				if level.map == 0 && (level.level_type == 2 || level.level_type == 3 || level.level_type == 4 || level.darkness > 0.1) { // Set to greater than 0.1, Just in case
+				 level.level_type = 8;
+				 level.behavior = 4;
+				   
 				   
 				   }
 				   if level.map == 3 && (level.zoom_out_max == -279.60767 || level.zoom_out_max == -279.60767) { //Hopefully the last Tennis Mii Pos Fix
@@ -625,6 +683,19 @@ fn main() {
 		           level.vert_dist = 8.2;
 				   
 				   }
+				   //I don't even know anymore....
+				   if level.map == 0 && (level.behavior == 4 || level.zoom_out_max == -222.0 || level.zoom_out_max == -222.0) { //Screen Bounding Fix for Street Levels with walking Miis
+				   level.unk7 = 17.0; // This is way to complicated to explain currently. TLDR: Screen Position on Map + Respawn Point Area
+				   level.horiz_dist = rng.sample(Uniform::new_inclusive(30.0, 38.3));
+				   level.vert_dist = 117.0;
+				   level.zoom_in_max = -200.0;
+				   level.zoom_out_max = -200.0;
+				   level.num_miis = rng.sample(Uniform::new_inclusive( 8, 45)); //Anything higher than 45 causes half the original amount of miis to spawn.
+				   
+				   
+				   
+				   }
+				   
 				   if level.map == 1 && (level.zoom_out_max == -240.0 || level.zoom_out_max == -240.0 || level.behavior == 0 || level.behavior == 1 || level.behavior == 3) { // Yet Again, Another Ocean Mii Position Fix
 				   level.zoom_out_max = -255.0;
 				    level.zoom_in_max = -255.0;
@@ -653,7 +724,7 @@ fn main() {
 				 
 				 }
 				 
-				 
+				 // Nope.
 			     if level.map == 1 && (level.zoom_out_max == -255.0 || level.zoom_in_max == -255.0 || level.behavior == 0 || level.behavior == 1 || level.behavior == 3) {
 				 level.horiz_dist = 6.4;
 		         level.vert_dist = 17.1;
