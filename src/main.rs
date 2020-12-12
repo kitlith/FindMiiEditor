@@ -9,7 +9,12 @@ use rand::distributions::uniform::{Uniform, SampleUniform};
 use rand::SeedableRng;
 use std::fmt::Display;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+use binread::{BinRead, ReadOptions};
+use binwrite::BinWrite;
+
+#[derive(Serialize, Deserialize, BinRead, BinWrite, Default, Debug)]
+#[br(big)]
+#[binwrite(big)]
 struct Level {
     num_miis: u32,
     behavior: u32,
@@ -29,62 +34,16 @@ struct Level {
     unk16: f32
 }
 
+// error handling omitted for the moment.
 impl Level {
-    fn from_bytes(input: &[u8; 64]) -> Level {
-        Level {
-            num_miis: BigEndian::read_u32(&input[0..]),
-            behavior: BigEndian::read_u32(&input[4..]),
-            level_type: BigEndian::read_u32(&input[8..]),
-            map: BigEndian::read_u32(&input[12..]),
-            zoom_out_max: BigEndian::read_f32(&input[16..]),
-            zoom_in_max: BigEndian::read_f32(&input[20..]),
-            unk7: BigEndian::read_f32(&input[24..]),
-            horiz_dist: BigEndian::read_f32(&input[28..]),
-            vert_dist: BigEndian::read_f32(&input[32..]),
-            darkness: BigEndian::read_f32(&input[36..]),
-            head_size: BigEndian::read_f32(&input[40..]),
-            unk12: BigEndian::read_f32(&input[44..]),
-            unk13: BigEndian::read_f32(&input[48..]),
-            unk14: BigEndian::read_f32(&input[52..]),
-            unk15: BigEndian::read_f32(&input[56..]),
-            unk16: BigEndian::read_f32(&input[60..]),
-        }
-    }
-
-    fn to_bytes(&self, output: &mut [u8; 64]) {
-        BigEndian::write_u32(&mut output[0..], self.num_miis);
-        BigEndian::write_u32(&mut output[4..], self.behavior);
-        BigEndian::write_u32(&mut output[8..], self.level_type);
-        BigEndian::write_u32(&mut output[12..], self.map);
-        BigEndian::write_f32(&mut output[16..], self.zoom_out_max);
-        BigEndian::write_f32(&mut output[20..], self.zoom_in_max);
-        BigEndian::write_f32(&mut output[24..], self.unk7);
-        BigEndian::write_f32(&mut output[28..], self.horiz_dist);
-        BigEndian::write_f32(&mut output[32..], self.vert_dist);
-        BigEndian::write_f32(&mut output[36..], self.darkness);
-        BigEndian::write_f32(&mut output[40..], self.head_size);
-        BigEndian::write_f32(&mut output[44..], self.unk12);
-        BigEndian::write_f32(&mut output[48..], self.unk13);
-        BigEndian::write_f32(&mut output[52..], self.unk14);
-        BigEndian::write_f32(&mut output[56..], self.unk15);
-        BigEndian::write_f32(&mut output[60..], self.unk16);
-    }
-
     fn from_file(mut input: File) -> Vec<Level> {
-        let mut levels: Vec<Level> = Vec::new();
-        let mut lvl_bytes = [0u8;64];
-        while input.read_exact(&mut lvl_bytes).is_ok() {
-            levels.push(Level::from_bytes(&lvl_bytes));
-        }
-        levels
+        let mut options = ReadOptions::default();
+        options.count = Some(99); // binread doesn't like a missing count for a vec... but there's supposed to be exactly 99 anyway.
+        BinRead::read_options(&mut input, &options, ()).unwrap()
     }
 
     fn to_file(mut output: File, levels: Vec<Level>) {
-        let mut lvl_bytes = [0u8;64];
-        for level in levels {
-            level.to_bytes(&mut lvl_bytes);
-            output.write_all(&lvl_bytes).unwrap();
-        }
+        levels.write(&mut output).unwrap();
     }
 }
 
